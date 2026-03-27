@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>生年月日からみる性質診断（日干10種版）</title>
+  <style>
+    body {
+      font-family: "Yu Gothic", "Hiragino Sans", sans-serif;
+      background: #f7f4ef;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #6b5b4d;
+      margin-bottom: 12px;
+      font-size: 28px;
+    }
+
+    .description {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #5c4f44;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #d8cfc4;
+      border-radius: 10px;
+      box-sizing: border-box;
+      background: #fffdf9;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 17px;
+      border: none;
+      border-radius: 10px;
+      background: #b79d7f;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #a68b6c;
+    }
+
+    .result {
+      margin-top: 28px;
+      padding: 20px;
+      background: #fcfaf7;
+      border: 1px solid #ebe3d8;
+      border-radius: 14px;
+      display: none;
+    }
+
+    .result h2 {
+      margin-top: 0;
+      color: #7a644d;
+      font-size: 24px;
+      margin-bottom: 18px;
+    }
+
+    .result-item {
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    .result-item strong {
+      color: #5c4f44;
+      display: inline-block;
+      min-width: 130px;
+    }
+
+    .error {
+      margin-top: 16px;
+      color: #c0392b;
+      font-weight: bold;
+      display: none;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #888;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .result-item strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>生年月日からみる性質診断</h1>
+    <p class="description">
+      生年月日をもとに、あなたの<br>
+      行動タイプ・思考タイプ・対人傾向をやさしく診断します。<br>
+      <small>（日干ベース / 日本時間 / 00:00切り替え）</small>
+    </p>
+
+    <div class="form-group">
+      <label for="birthdate">生年月日を入力してください</label>
+      <input type="date" id="birthdate" />
+    </div>
+
+    <button onclick="diagnose()">診断する</button>
+
+    <p id="errorMessage" class="error">生年月日を入力してください。</p>
+
+    <div id="result" class="result">
+      <h2 id="typeName"></h2>
+
+      <div class="result-item">
+        <strong>日干：</strong>
+        <span id="nikkan"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>日干支：</strong>
+        <span id="kanshi"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>五行タイプ：</strong>
+        <span id="gogyoType"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>行動タイプ：</strong>
+        <span id="actionType"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>思考タイプ：</strong>
+        <span id="thinkingType"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>対人傾向：</strong>
+        <span id="relationshipType"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>強み：</strong>
+        <span id="strength"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>注意点：</strong>
+        <span id="caution"></span>
+      </div>
+
+      <div class="result-item">
+        <strong>アドバイス：</strong>
+        <span id="advice"></span>
+      </div>
+
+      <p class="footer-note">
+        ※ 日干のみで判定しています。<br>
+        ※ 日本時間の暦日を使い、日替わりは00:00です。<br>
+        ※ 年柱・月柱・節入り判定はまだ入れていません。
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const diagnosisData = {
+      "甲": {
+        typeName: "甲｜大樹タイプ",
+        gogyoType: "木タイプ",
+        actionType: "まっすぐ上へ伸びる木のように、目的が見えると力強く前進していくタイプです。",
+        thinkingType: "理想や成長を重視し、物事を大きな視点で捉えようとする傾向があります。",
+        relationshipType: "周囲を引っ張る力がありますが、正しさや方向性を強く示しすぎることもあります。",
+        strength: "行動力・発展力・統率力",
+        caution: "急ぎすぎる／相手のペースを待てないことがある",
+        advice: "立ち止まって周囲の声を受け取ることで、持ち前の推進力がより信頼につながります。"
+      },
+      "乙": {
+        typeName: "乙｜草花タイプ",
+        gogyoType: "木タイプ",
+        actionType: "しなやかに道を見つけながら、環境に合わせて伸びていくタイプです。",
+        thinkingType: "細やかさと感受性があり、無理なく成長できる道を探す傾向があります。",
+        relationshipType: "やわらかく人に寄り添えますが、気を遣いすぎて本音を抑えてしまうこともあります。",
+        strength: "柔軟性・調整力・繊細な気配り",
+        caution: "遠慮しすぎる／迷いやすいことがある",
+        advice: "やさしさに加えて、自分の意思を少し言葉にすると魅力がより伝わります。"
+      },
+      "丙": {
+        typeName: "丙｜太陽タイプ",
+        gogyoType: "火タイプ",
+        actionType: "明るくオープンに動き、人を照らしながら場を前向きにしていくタイプです。",
+        thinkingType: "物事を大きく捉え、前向きさや勢いを大切にして判断する傾向があります。",
+        relationshipType: "親しみやすく人を惹きつけますが、気持ちが前に出すぎると大雑把に見られることもあります。",
+        strength: "明朗さ・発信力・周囲を元気づける力",
+        caution: "勢いで進みすぎる／細部が抜けやすい",
+        advice: "少し丁寧さを意識することで、あなたの魅力がさらに信頼と結びつきます。"
+      },
+      "丁": {
+        typeName: "丁｜灯火タイプ",
+        gogyoType: "火タイプ",
+        actionType: "必要なところを静かに照らすように、繊細さを活かして動くタイプです。",
+        thinkingType: "感受性が高く、表面的なことより心の機微や意味を大切にして考える傾向があります。",
+        relationshipType: "相手の気持ちに寄り添えますが、傷つきやすさから距離を取りたくなることもあります。",
+        strength: "繊細な洞察・あたたかさ・共感的な表現力",
+        caution: "気にしすぎる／感情を溜め込みやすい",
+        advice: "自分の心を守る時間を持つことで、やさしい光を無理なく届けられます。"
+      },
+      "戊": {
+        typeName: "戊｜山タイプ",
+        gogyoType: "土タイプ",
+        actionType: "どっしり構えて物事を受け止め、簡単には揺らがず進めていくタイプです。",
+        thinkingType: "安定や現実性を重視し、長い目で見て確かな形を作ろうとする傾向があります。",
+        relationshipType: "頼られやすく包容力がありますが、自分の考えを変えにくい面もあります。",
+        strength: "安定感・責任感・継続力",
+        caution: "頑なになりやすい／動き出しが遅くなることがある",
+        advice: "少し柔軟さを取り入れると、持ち前の信頼感がさらに活きてきます。"
+      },
+      "己": {
+        typeName: "己｜畑タイプ",
+        gogyoType: "土タイプ",
+        actionType: "人や物事を育てるように、丁寧に整えながら進めていくタイプです。",
+        thinkingType: "全体のバランスを見ながら、どうすれば無理なく育つかを考える傾向があります。",
+        relationshipType: "世話好きで受容的ですが、相手に合わせすぎて疲れてしまうこともあります。",
+        strength: "受容力・育成力・調整力",
+        caution: "抱え込みやすい／自分を後回しにしがち",
+        advice: "まず自分の土台を整えることで、周りを支える力がさらに安定します。"
+      },
+      "庚": {
+        typeName: "庚｜鋼タイプ",
+        gogyoType: "金タイプ",
+        actionType: "強い意志で道を切り開き、必要な変化を起こしていくタイプです。",
+        thinkingType: "白黒をはっきりさせたい気持ちが強く、結果や本質を重視する傾向があります。",
+        relationshipType: "率直で頼もしい反面、言葉が強くなると厳しい印象を与えることもあります。",
+        strength: "決断力・突破力・実行力",
+        caution: "強さが前に出すぎる／柔らかさが不足しやすい",
+        advice: "相手への伝え方を少し和らげると、あなたの強みがより活かされます。"
+      },
+      "辛": {
+        typeName: "辛｜宝石タイプ",
+        gogyoType: "金タイプ",
+        actionType: "洗練された感覚で無駄をそぎ、質を高めながら進めていくタイプです。",
+        thinkingType: "美意識や精度を大切にし、細部まで整えることに価値を感じやすい傾向があります。",
+        relationshipType: "丁寧で品のある関わり方をしますが、繊細さゆえに傷つきやすい面もあります。",
+        strength: "審美眼・分析力・整える力",
+        caution: "完璧を求めすぎる／批判的になりやすい",
+        advice: "完成度だけでなく、途中の良さも認めると気持ちが少し楽になります。"
+      },
+      "壬": {
+        typeName: "壬｜海タイプ",
+        gogyoType: "水タイプ",
+        actionType: "大きな流れを読みながら、自由で伸びやかに動いていくタイプです。",
+        thinkingType: "発想の幅が広く、枠にとらわれず可能性を見つける傾向があります。",
+        relationshipType: "おおらかで包容力がありますが、つかみどころがないと思われることもあります。",
+        strength: "スケール感・柔軟性・発想力",
+        caution: "方向が散りやすい／まとまりに欠けることがある",
+        advice: "大きな可能性の中でも、今の一歩を決めると流れが形になりやすくなります。"
+      },
+      "癸": {
+        typeName: "癸｜雨露タイプ",
+        gogyoType: "水タイプ",
+        actionType: "静かに状況を読み、必要なところへやさしく働きかけていくタイプです。",
+        thinkingType: "深く内面を見つめる力があり、微細な違和感や感情の変化を捉えやすい傾向があります。",
+        relationshipType: "控えめながら深い共感力がありますが、影響を受けすぎると疲れやすくなります。",
+        strength: "直感力・感受性・静かな支援力",
+        caution: "考え込みやすい／不安を抱え込みやすい",
+        advice: "自分の感覚を守る時間を持つことで、本来の繊細な力が安心して発揮されます。"
+      }
+    };
+
+    const STEM_BRANCHES = [
+      "甲子","乙丑","丙寅","丁卯","戊辰","己巳","庚午","辛未","壬申","癸酉",
+      "甲戌","乙亥","丙子","丁丑","戊寅","己卯","庚辰","辛巳","壬午","癸未",
+      "甲申","乙酉","丙戌","丁亥","戊子","己丑","庚寅","辛卯","壬辰","癸巳",
+      "甲午","乙未","丙申","丁酉","戊戌","己亥","庚子","辛丑","壬寅","癸卯",
+      "甲辰","乙巳","丙午","丁未","戊申","己酉","庚戌","辛亥","壬子","癸丑",
+      "甲寅","乙卯","丙辰","丁巳","戊午","己未","庚申","辛酉","壬戌","癸亥"
+    ];
+
+    function mod(n, m) {
+      return ((n % m) + m) % m;
+    }
+
+    function gregorianToJDN(year, month, day) {
+      const a = Math.floor((14 - month) / 12);
+      const y = year + 4800 - a;
+      const m = month + 12 * a - 3;
+
+      return day
+        + Math.floor((153 * m + 2) / 5)
+        + 365 * y
+        + Math.floor(y / 4)
+        - Math.floor(y / 100)
+        + Math.floor(y / 400)
+        - 32045;
+    }
+
+    // 基準日：1912-02-18 = 甲子日
+    const BASE_JDN = gregorianToJDN(1912, 2, 18);
+
+    function getDayStemBranch(year, month, day) {
+      const jdn = gregorianToJDN(year, month, day);
+      const index = mod(jdn - BASE_JDN, 60);
+      return STEM_BRANCHES[index];
+    }
+
+    function diagnose() {
+      const birthdate = document.getElementById("birthdate").value;
+      const errorMessage = document.getElementById("errorMessage");
+      const result = document.getElementById("result");
+
+      if (!birthdate) {
+        errorMessage.style.display = "block";
+        result.style.display = "none";
+        return;
+      }
+
+      errorMessage.style.display = "none";
+
+      const [yearStr, monthStr, dayStr] = birthdate.split("-");
+      const year = Number(yearStr);
+      const month = Number(monthStr);
+      const day = Number(dayStr);
+
+      const kanshi = getDayStemBranch(year, month, day);
+      const nikkan = kanshi.charAt(0);
+      const data = diagnosisData[nikkan];
+
+      document.getElementById("typeName").textContent = data.typeName;
+      document.getElementById("nikkan").textContent = nikkan;
+      document.getElementById("kanshi").textContent = kanshi;
+      document.getElementById("gogyoType").textContent = data.gogyoType;
+      document.getElementById("actionType").textContent = data.actionType;
+      document.getElementById("thinkingType").textContent = data.thinkingType;
+      document.getElementById("relationshipType").textContent = data.relationshipType;
+      document.getElementById("strength").textContent = data.strength;
+      document.getElementById("caution").textContent = data.caution;
+      document.getElementById("advice").textContent = data.advice;
+
+      result.style.display = "block";
+    }
+  </script>
+</body>
+</html>

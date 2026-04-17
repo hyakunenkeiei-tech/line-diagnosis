@@ -1,16 +1,10 @@
 let appData = null;
 
-const STEM_BRANCHES = [
-  "甲子","乙丑","丙寅","丁卯","戊辰","己巳","庚午","辛未","壬申","癸酉",
-  "甲戌","乙亥","丙子","丁丑","戊寅","己卯","庚辰","辛巳","壬午","癸未",
-  "甲申","乙酉","丙戌","丁亥","戊子","己丑","庚寅","辛卯","壬辰","癸巳",
-  "甲午","乙未","丙申","丁酉","戊戌","己亥","庚子","辛丑","壬寅","癸卯",
-  "甲辰","乙巳","丙午","丁未","戊申","己酉","庚戌","辛亥","壬子","癸丑",
-  "甲寅","乙卯","丙辰","丁巳","戊午","己未","庚申","辛酉","壬戌","癸亥"
-];
+const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
-// 以前の公開版で使っていた基準日（甲子日）
-const BASE_JDN = gregorianToJDN(1912, 2, 18);
+// 甲子日の基準
+const BASE_DATE_JST = "1984-02-02";
 
 document.addEventListener("DOMContentLoaded", async () => {
   await loadAppData();
@@ -62,35 +56,30 @@ function diagnose() {
   renderResult(resultData, stemData, branchData);
 }
 
+function calculateDayKanshi(dateString) {
+  const target = parseDateAsJST(dateString);
+  const base = parseDateAsJST(BASE_DATE_JST);
+
+  if (!target || !base) return null;
+
+  const diffMs = target.getTime() - base.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  const cycleIndex = mod(diffDays, 60);
+
+  const stem = STEMS[mod(cycleIndex, 10)];
+  const branch = BRANCHES[mod(cycleIndex, 12)];
+
+  return stem + branch;
+}
+
+function parseDateAsJST(dateString) {
+  const [y, m, d] = dateString.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
 function mod(n, m) {
   return ((n % m) + m) % m;
-}
-
-function gregorianToJDN(year, month, day) {
-  const a = Math.floor((14 - month) / 12);
-  const y = year + 4800 - a;
-  const m = month + 12 * a - 3;
-
-  return day
-    + Math.floor((153 * m + 2) / 5)
-    + 365 * y
-    + Math.floor(y / 4)
-    - Math.floor(y / 100)
-    + Math.floor(y / 400)
-    - 32045;
-}
-
-function calculateDayKanshi(dateString) {
-  const [yearStr, monthStr, dayStr] = dateString.split("-");
-  const year = Number(yearStr);
-  const month = Number(monthStr);
-  const day = Number(dayStr);
-
-  if (!year || !month || !day) return null;
-
-  const jdn = gregorianToJDN(year, month, day);
-  const index = mod(jdn - BASE_JDN, 60);
-  return STEM_BRANCHES[index];
 }
 
 function renderResult(resultData, stemData, branchData) {
@@ -119,12 +108,8 @@ function renderResult(resultData, stemData, branchData) {
 
   document.getElementById("caution").textContent = resultData.caution || "";
   document.getElementById("advice").textContent = resultData.advice || "";
-
-  const detailNoteEl = document.getElementById("detailNote");
-  if (detailNoteEl) {
-    detailNoteEl.textContent =
-      `十干象意：${stemData?.symbol || "-"} ／ 十二支象意：${branchData?.symbol || "-"}`;
-  }
+  document.getElementById("detailNote").textContent =
+    `十干象意：${stemData?.symbol || "-"} ／ 十二支象意：${branchData?.symbol || "-"}`;
 
   document.getElementById("result").style.display = "block";
 }

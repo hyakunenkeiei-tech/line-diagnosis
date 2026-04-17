@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>生年月日からみる性質診断（日干支60種版）</title>
+  <title>生年月日でみる あなたの本質診断ツール</title>
   <style>
     body {
       font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -13,32 +13,39 @@
       padding: 24px;
       line-height: 1.8;
     }
+
     .container {
       max-width: 760px;
       margin: 0 auto;
       background: #fff;
       padding: 28px;
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
+
     h1 {
       font-size: 1.8rem;
       margin-top: 0;
       margin-bottom: 12px;
       color: #5b4b3a;
+      line-height: 1.5;
     }
-    .lead {
+
+    p.lead {
       margin-top: 0;
       color: #666;
     }
+
     .form-group {
       margin: 20px 0;
     }
+
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
     }
+
     input[type="date"] {
       width: 100%;
       max-width: 260px;
@@ -49,6 +56,7 @@
       background: #fff;
       box-sizing: border-box;
     }
+
     button {
       margin-top: 12px;
       padding: 12px 20px;
@@ -59,12 +67,17 @@
       color: #fff;
       cursor: pointer;
     }
-    button:hover { opacity: 0.9; }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
     .message {
       margin-top: 14px;
       color: #b00020;
       font-weight: bold;
     }
+
     .result {
       margin-top: 28px;
       padding: 20px;
@@ -73,25 +86,13 @@
       border-radius: 12px;
       display: none;
     }
+
     .result h2 {
       margin-top: 0;
       color: #5b4b3a;
       font-size: 1.4rem;
     }
-    .item { margin-bottom: 12px; }
-    .label {
-      font-weight: bold;
-      color: #6a533f;
-    }
-    ul {
-      margin-top: 6px;
-      padding-left: 1.2em;
-    }
-    .notes {
-      margin-top: 24px;
-      font-size: 0.95rem;
-      color: #666;
-    }
+
     .headline-box {
       margin: 10px 0 18px;
       padding: 12px 14px;
@@ -100,6 +101,7 @@
       color: #5b4b3a;
       font-weight: bold;
     }
+
     .profile-box {
       margin: 10px 0 18px;
       padding: 14px;
@@ -107,26 +109,76 @@
       border: 1px solid #eee4d8;
       border-radius: 10px;
     }
-    .sublist {
-      margin-top: 4px;
-      color: #555;
+
+    .item {
+      margin-bottom: 12px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #6a533f;
+    }
+
+    ul {
+      margin-top: 6px;
+      padding-left: 1.2em;
+    }
+
+    .share-box {
+      margin-top: 16px;
+      padding: 14px;
+      background: #f7f1ea;
+      border-radius: 10px;
+    }
+
+    .retry-wrap {
+      margin-top: 18px;
+      text-align: center;
+    }
+
+    .retry-btn {
+      background: #b79b7f;
+    }
+
+    .retry-btn:hover {
+      opacity: 0.9;
+    }
+
+    .notes {
+      margin-top: 24px;
       font-size: 0.95rem;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>生年月日からみる性質診断</h1>
+    <h1>生年月日でみる あなたの本質診断ツール</h1>
+
     <p class="lead">
-      生年月日をもとに、あなたの行動タイプ・思考タイプ・対人傾向をやさしく診断します。<br>
-      （日干支ベース / 日本時間 / 00:00切り替え）
+      生年月日をもとに、あなたの本質や強み、心の傾向をやさしく読み解く診断ツールです。<br>
+      自分らしさを知りたいときや、これからの方向性を見つめたいときにお役立てください。
     </p>
 
     <div class="form-group">
       <label for="birthdate">生年月日を入力してください</label>
       <input type="date" id="birthdate" />
       <br>
-      <button id="diagnoseBtn">診断する</button>
+      <button id="diagnoseBtn" type="button">診断する</button>
       <div id="message" class="message"></div>
     </div>
 
@@ -151,14 +203,20 @@
       <div class="item"><span class="label">注意点：</span><span id="caution"></span></div>
       <div class="item"><span class="label">アドバイス：</span><span id="advice"></span></div>
 
-      <div class="item sublist" id="detailNote"></div>
+      <div class="share-box">
+        <span class="label">今のあなたへのひとこと：</span>
+        <span id="shareMessage"></span>
+      </div>
+
+      <div class="retry-wrap">
+        <button id="retryBtn" class="retry-btn" type="button">もう一度診断する</button>
+      </div>
     </div>
 
     <div class="notes">
-      ※ 日干支60種類で判定しています。<br>
-      ※ 日本時間の暦日を使い、日替わりは00:00です。<br>
-      ※ 年柱・月柱・節入り判定はまだ入れていません。<br>
-      ※ データファイル名は <code>rokkujikkanshi_app_data.json</code> のままにしてください。
+      ※ この診断は、生年月日をもとにした性質の傾向をやさしく読み解くものです。<br>
+      ※ ご自身を縛るためではなく、自分を知るヒントとしてご活用ください。<br>
+      ※ 日本時間の暦日を使い、日替わりは00:00です。
     </div>
   </div>
 
